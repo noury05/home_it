@@ -49,9 +49,16 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto">
                         <a href="index.php" class="nav-item nav-link">Home</a>
-                        <a href="about.html" class="nav-item nav-link">About</a>
+                        <a href="about.php" class="nav-item nav-link">About</a>
                         
-                            <a href="property-list.php" class="nav-item nav-link active">Property List</a>
+                        <div class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle active" data-bs-toggle="dropdown">Property</a>
+                            <div class="dropdown-menu rounded-0 m-0">
+                                <a href="../frontend/property-list.php" class="dropdown-item">Property List</a>
+                                <a href="../frontend/property_type.php" class="dropdown-item active">Property Type</a>
+                            </div>
+                        </div>
+
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu rounded-0 m-0">
@@ -59,7 +66,7 @@
                                 <a href="../sign_up_sign_in/register.php" class="dropdown-item">SignUp</a>
                                 
                                 <a href="../sign_up_sign_in/login.php" class="dropdown-item">Login</a>
-                                <a href="testimonial.php" class="dropdown-item">Testimonial</a>
+                                <a href="wishlist.php" class="dropdown-item">My Wishlist</a>
                             </div>
                         </div>
                         <a href="contact.php" class="nav-item nav-link">Contact</a>
@@ -98,14 +105,33 @@
             <header class="title">
                 <h1><?= $row["title"]; ?></h1>
                 <div class="tags">
-                <?php 
-                    $type_query = $con->query("SELECT type FROM property_types WHERE type_id = " . $row['type_id']);
-                    $property_type = mysqli_fetch_assoc($type_query)['type'];
-                 ?>
-                    <span class="tag featured"><?= $property_type ?></span>
+                    <?php 
+                        $type_query = $con->query("SELECT type FROM property_types WHERE type_id = " . $row['type_id']);
+                        $type = mysqli_fetch_assoc($type_query)['type'];
+                    ?>
+                    <span class="tag featured"><?= $type ?></span>
                     <span class="tag for-sale"><?= $row["purpose"]; ?></span>
                 </div>
-                <div class="price">$<?= $row["price"]; ?></div>
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="price">$<?= $row["price"]; ?></div>
+                    <button 
+                        class="wishlist-btn btn btn-outline-danger" 
+                        data-property-id="<?= $row['property_id'] ?>">
+                        <i class="fa fa-heart-o"></i> Add to Wishlist
+                    </button>
+                    <div aria-live="polite" aria-atomic="true" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
+                        <div id="wishlist-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+                            <div class="toast-header">
+                                <strong class="me-auto">Wishlist</strong>
+                                <small class="text-muted">just now</small>
+                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">
+                                Notification message here.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </header>
             
             <div class="content">
@@ -140,7 +166,7 @@
                             <td><?= $row["bathrooms"]; ?></td>
                         </tr>
                         <tr>
-                            <th>Area of the house</th>
+                            <th>Area</th>
                             <td><?= $row["sqft"]; ?> square feet</td>
                         </tr>
                     </table>
@@ -192,7 +218,7 @@
                     </div>
                     <div class="col-lg-4 col-md-6">
                         <h5 class="text-white mb-4">Quick Links</h5>
-                        <a class="btn btn-link text-white-50" href="about.html">About Us</a>
+                        <a class="btn btn-link text-white-50" href="about.php">About Us</a>
                         <a class="btn btn-link text-white-50" href="contact.php">Contact Us</a>
                         <a class="btn btn-link text-white-50" href="properties-list.php">Properties List</a>
                         <a class="btn btn-link text-white-50" href="">Privacy Policy</a>
@@ -237,3 +263,96 @@
     
     <!-- Template Javascript -->
     <script src="../js/main.js"></script>
+    <script>
+        
+        document.addEventListener("DOMContentLoaded", function () {
+            function getWishlist() {
+                const wishlistCookie = document.cookie
+                    .split("; ")
+                    .find((row) => row.startsWith("wishlist="));
+                try {
+                    return wishlistCookie ? JSON.parse(decodeURIComponent(wishlistCookie.split("=")[1])) : [];
+                } catch (error) {
+                    console.error("Failed to parse wishlist cookie:", error);
+                    return [];
+                }
+            }
+
+            function saveWishlist(wishlist) {
+                const expiryDate = new Date();
+                expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+                document.cookie = `wishlist=${encodeURIComponent(
+                    JSON.stringify(wishlist)
+                )}; expires=${expiryDate.toUTCString()}; path=/`;
+            }
+
+            function updateWishlistButtons() {
+                const wishlist = getWishlist();
+                document.querySelectorAll(".wishlist-btn").forEach((button) => {
+                    const propertyId = button.getAttribute("data-property-id");
+                    const icon = button.querySelector("i");
+
+                    if (wishlist.includes(propertyId)) {
+                        button.classList.add("active");
+                        icon.className = 'fa fa-heart'; // Filled heart icon
+                    } else {
+                        button.classList.remove("active");
+                        icon.className = 'fa fa-heart-o'; // Outline heart icon
+                    }
+                });
+            }
+
+            function showToast(message) {
+                const toastElement = document.getElementById('wishlist-toast');
+                const toastBody = toastElement.querySelector('.toast-body');
+                toastBody.textContent = message;
+                
+                const toast = new bootstrap.Toast(toastElement); // Initialize Bootstrap toast
+                toast.show(); // Show the toast
+            }
+
+            function updateWishlistButtons() {
+                const wishlist = getWishlist();
+                document.querySelectorAll(".wishlist-btn").forEach((button) => {
+                    const propertyId = button.getAttribute("data-property-id");
+                    const icon = button.querySelector("i");
+
+                    if (wishlist.includes(propertyId)) {
+                        button.classList.add("active");
+                        icon.className = 'fa fa-heart'; // Filled heart icon
+                        button.setAttribute("title", "Added to Wishlist"); // Tooltip text for better UX
+                        button.innerHTML = '<i class="fa fa-heart"></i> Added to Wishlist'; // Updated text
+                    } else {
+                        button.classList.remove("active");
+                        icon.className = 'fa fa-heart-o'; // Outline heart icon
+                        button.setAttribute("title", "Add to Wishlist"); // Tooltip text
+                        button.innerHTML = '<i class="fa fa-heart-o"></i> Add to Wishlist'; // Default text
+                    }
+                });
+            }
+
+            document.body.addEventListener("click", function (e) {
+                if (e.target.closest(".wishlist-btn")) {
+                    const button = e.target.closest(".wishlist-btn");
+                    const propertyId = button.getAttribute("data-property-id");
+                    let wishlist = getWishlist();
+
+                    if (wishlist.includes(propertyId)) {
+                        wishlist = wishlist.filter((id) => id !== propertyId);
+                        showToast("Removed from wishlist");
+                    } else {
+                        wishlist.push(propertyId);
+                        showToast("Added to wishlist");
+                    }
+
+                    saveWishlist(wishlist);
+                    updateWishlistButtons();
+                }
+            });
+
+            updateWishlistButtons();
+        });
+    </script>
+
+</body>
+</html>   

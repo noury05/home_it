@@ -119,7 +119,17 @@
                     
                     <!-- Change Password Button -->
                     <a href="changePassword.php" class="styled-button">Change Password</a>
-
+                    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                        <div id="toastNotification" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="toast-header">
+                                <strong class="me-auto">Notification</strong>
+                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">
+                                <!-- Toast message will be dynamically inserted here -->
+                            </div>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
@@ -184,7 +194,21 @@
         <!-- Back to Top -->
         <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toastElement = document.getElementById('toastNotification');
+            const toastBody = toastElement.querySelector('.toast-body');
 
+            <?php if (isset($_SESSION['toast_message'])): ?>
+                toastBody.textContent = "<?= $_SESSION['toast_message']; ?>";
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+
+                // Clear the session message
+                <?php unset($_SESSION['toast_message']); ?>
+            <?php endif; ?>
+        });
+    </script>
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>

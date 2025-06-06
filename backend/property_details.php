@@ -13,6 +13,14 @@
   $sql = "SELECT * FROM messages WHERE user_id='$user_id' AND property_id='$artID'";
   $messages=$con->query($sql);
 
+  if (isset($_SESSION['success_message'])) {
+    echo "<script>window.addEventListener('DOMContentLoaded', function() {
+        showToast('{$_SESSION['success_message']}');
+    });</script>";
+    unset($_SESSION['success_message']);
+  }
+
+
 ?>
 
 <!DOCTYPE html>
@@ -42,13 +50,17 @@
     <!-- Template Stylesheet -->
     <link href="../css/style.css" rel="stylesheet">
     <link href="../css/style3.css" rel="stylesheet">
-
+    <style>
+        .toast-container {
+            z-index: 1050;
+        }
+    </style>
 </head>
 <body>
 
     <div class="container-xxl bg-white p-0">
 
-                <!-- Navbar Start -->
+        <!-- Navbar Start -->
         <div class="container-fluid nav-bar bg-transparent">
             <nav class="navbar navbar-expand-lg bg-white navbar-light py-0 px-4">
                 <a href="backend_index.php" class="navbar-brand d-flex align-items-center text-center">
@@ -70,7 +82,7 @@
                             <div class="dropdown-menu rounded-0 m-0">
                                 
                                 <a href="editAccount.php" class="dropdown-item">Edit My Account</a>
-                                <a href="addProperty.php" class="dropdown-item active">Add Property</a>
+                                <a href="addProperty.php" class="dropdown-item">Add Property</a>
                                 
                                 <a href="myProperties.php" class="dropdown-item active">My Properties</a>
                                 <a href="messages.php" class="dropdown-item">Messages</a>
@@ -85,25 +97,22 @@
         </div>
         <!-- Navbar End -->
 
+
+
         <!-- -------------------------PHP code--------------------------------- -->
         <?php
-                    
             $artID=$_GET['id'];
 
             $sql="SELECT * FROM properties WHERE property_id='$artID'";
-            
-
             $result=mysqli_query($con,$sql);
             $row = mysqli_fetch_assoc($result);
 
             $sqll="SELECT * FROM images WHERE property_id='$artID'";
-
             $resultt=mysqli_query($con,$sqll);
-
         ?>
         <!-- -------------------------PHP code--------------------------------- -->
 
-        <!-- property detail start !-->
+        <!-- property detail start -->
         <div class="container">
             <!-- Featured Image -->
             <div class="featured-image">
@@ -116,7 +125,7 @@
                 <?php 
                     $type_query = $con->query("SELECT type FROM property_types WHERE type_id = " . $row['type_id']);
                     $property_type = mysqli_fetch_assoc($type_query)['type'];
-                 ?>
+                ?>
                     <span class="tag featured"><?= $property_type ?></span>
                     <span class="tag for-sale"><?= $row["purpose"]; ?></span>
                 </div>
@@ -167,24 +176,20 @@
                     <form action="update_status.php?id=<?= $row['property_id'] ?>" method="POST">
                         <label>
                             <input type="radio" name="status" value="Available" 
-                                <?php echo $row["status"] === 'available' ? 'checked' : ''; ?>> 
-                            Available
+                                <?= $row["status"] === 'available' ? 'checked' : ''; ?>> Available
                         </label>
                         <label>
                             <input type="radio" name="status" value="Rented" 
-                                <?php echo $row["status"] === 'rented' ? 'checked' : ''; ?>> 
-                            Rented
+                                <?= $row["status"] === 'rented' ? 'checked' : ''; ?>> Rented
                         </label>
                         <label>
                             <input type="radio" name="status" value="Sold" 
-                                <?php echo $row["status"] === 'old' ? 'checked' : ''; ?>> 
-                            Sold
+                                <?= $row["status"] === 'sold' ? 'checked' : ''; ?>> Sold
                         </label>
                         <button type="submit" name="update_status">Update Status</button>
                     </form>
                 </div>
             </div>
-
 
             <!-- Image Gallery -->
             <section class="gallery">
@@ -194,32 +199,56 @@
                         <img src="<?= $images["image_url"] ?: '../img/z-image1.webp'?>" alt="">
                     <?php endwhile; ?>
                 </div>
+                <!-- Edit and Delete Buttons -->
+                <div class="property-actions" style="text-align: center; margin-top: 20px;">
+                    <a href="editProperty.php?id=<?= $row['property_id'] ?>" class="btn styled-button" style="display: inline-block; padding: 10px 20px; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px;">Edit Property</a>
+                    <button class="btn delete-btn" onclick="confirmDelete(<?= $row['property_id'] ?>)" style="padding: 10px 20px; background-color: #DC3545; color: white; border: none; border-radius: 5px; cursor: pointer;">Delete Property</button>
+                </div>
             </section><br>
-            
         </div>
 
         <div class="messages-container">
             <h2>Messages from Interested Clients</h2>
-            
-            <?php if (mysqli_num_rows($messages) == 0): ?> <!-- Check if there are no messages -->
+            <?php if (mysqli_num_rows($messages) == 0): ?>
                 <div class="message-card">
                     <h3>No messages sent</h3>
                 </div>
-            <?php else: ?> <!-- Display messages if they exist -->
-                <?php while ($row = mysqli_fetch_assoc($messages)) : ?>
+            <?php else: ?>
+                <?php while ($msg_row = mysqli_fetch_assoc($messages)): ?>
                     <div class="message-card">
-                        <h3>Message:</h3>
-                        <p><?= htmlspecialchars($row['client_message']) ?></p>
+                    <h3>Message marked as <span style="font-size: smaller;"><i>--> <?= htmlspecialchars($msg_row['status']) ?></i></span></h3>
+                    <?php 
+                        $query="select title from properties where property_id=".$msg_row['property_id'];
+                        $result = mysqli_query($con, $query);  // Assuming $con is the active MySQL connection
+                        $property = mysqli_fetch_assoc($result);
+                        $title = $property ? $property['title'] : 'Unknown Property';
+                    ?>
+                    <h5>Intended Property <span style="font-size: smaller;"><i>--> <?= $title?></i></span></h5>
+                    <p><?= htmlspecialchars($msg_row['client_message']) ?></p>
                         <div class="client-details">
-                            <p><strong>Name:</strong> <?= htmlspecialchars($row['client_name']) ?></p>
-                            <p><strong>Phone:</strong> <?= htmlspecialchars($row['client_phone']) ?></p>
-                            <p><strong>Date Sent:</strong> <?= htmlspecialchars($row['date_sent']) ?></p>
+                            <p><strong>Name:</strong> <?= htmlspecialchars($msg_row['client_name']) ?></p>
+                            <p><strong>Phone:</strong> <?= htmlspecialchars($msg_row['client_phone']) ?></p>
+                            <p><strong>Date Sent:</strong> <?= htmlspecialchars($msg_row['date_sent']) ?></p>
+                        </div>
+                        <!-- Message Actions -->
+                        <div class="message-actions">
+                            <a href="markMessage.php?id=<?= $msg_row['message_id'] ?>&action=read" title="Mark as Read" class="message-icon" style="font-size: 30px;">✔</a>
+                            <a href="markMessage.php?id=<?= $msg_row['message_id'] ?>&action=unread" title="Mark as Unread" class="message-icon" style="font-size: 30px;">✉</a>
+                            <a href="markMessage.php?id=<?= $msg_row['message_id'] ?>&action=resolved" title="Mark as Resolved" class="message-icon" style="font-size: 30px;">✓</a>
+                            <a href="markMessage.php?id=<?= $msg_row['message_id'] ?>&action=ignore" title="Ignore Message" class="message-icon" style="font-size: 30px;">✗</a>
                         </div>
                     </div>
                 <?php endwhile; ?>
             <?php endif; ?>
         </div>
 
+        <script>
+            function confirmDelete(propertyId) {
+                if (confirm('Are you sure you want to delete this property? All related messages will be deleted.')) {
+                    window.location.href = `deleteProperty.php?id=${propertyId}`;
+                }
+            }
+        </script>
 
 
   
@@ -274,10 +303,74 @@
         </div>
         <!-- Footer End -->
 
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div id="toastNotification" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto">Notification</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    <!-- Toast message will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
 
         <!-- Back to Top -->
         <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const toastElement = document.getElementById('toastNotification');
+            const toastBody = toastElement.querySelector('.toast-body');
+
+            <?php if (isset($_SESSION['toast_message'])): ?>
+                toastBody.textContent = "<?= $_SESSION['toast_message']; ?>";
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+
+                // Clear the session message
+                <?php unset($_SESSION['toast_message']); ?>
+            <?php endif; ?>
+        });
+
+        function showToast(message) {
+            // Create a toast container if it doesn't exist
+            if (!document.getElementById('toast-container')) {
+                const toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+
+            // Create a new toast element
+            const toastHTML = `
+                <div class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+
+            // Append the new toast to the container
+            document.getElementById('toast-container').insertAdjacentHTML('beforeend', toastHTML);
+
+            // Initialize and show the toast
+            const toastElement = document.getElementById('toast-container').lastElementChild;
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+
+            // Automatically remove the toast after it hides
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        }
+    </script>
 
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>

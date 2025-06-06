@@ -4,59 +4,47 @@
   if (!isset($_SESSION['user_id'])){
     header("location:../sign_up_sign_in/login.php?error=2");
   }
-    
-    
 
   include '../inc/connection.php';
 
-  $id=$_SESSION['user_id'];
+  $id = $_SESSION['user_id'];
+  $status_filter = isset($_GET['status']) ? $_GET['status'] : 'all';
 
   $query = "SELECT * FROM users WHERE user_id='$id'";
   $result = $con->query($query);
-  
+
   $row = $result->fetch_assoc(); 
   $name = $row['name'];
 
-
-  $sql = "SELECT * FROM client_reviews ORDER BY RAND() LIMIT 4";
+  $sql = "SELECT * FROM users_reviews ORDER BY RAND() LIMIT 4";
   $all_reviews = $con->query($sql);
 
+  $query = "SELECT * FROM properties WHERE user_id='$id'";
+  if ($status_filter !== 'all') {
+      $query .= " AND status = '$status_filter'";
+  }
+
+  $my_properties = $con->query($query);
 ?>
-
-
-
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
-    <title>HomeIt - Your Trusted Partner in Finding the Perfect Home</title>
+    <title>HomeIt - Your Trusted Partner in Selling and Buying Properties</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-
-    <!-- Favicon -->
     <link href="..\img\icon.png" rel="icon">
-
-    <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Inter:wght@700;800&display=swap" rel="stylesheet">
-    
-    <!-- Icon Font Stylesheet -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Customized Bootstrap Stylesheet -->
     <link href="../css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Template Stylesheet -->
     <link href="../css/style.css" rel="stylesheet">
 </head>
 
 <body>
     <div class="container-xxl bg-white p-0">
-
-        <!-- Navbar Start -->
         <div class="container-fluid nav-bar bg-transparent">
             <nav class="navbar navbar-expand-lg bg-white navbar-light py-0 px-4">
                 <a href="backend_index.php" class="navbar-brand d-flex align-items-center text-center">
@@ -76,12 +64,9 @@
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">My account</a>
                             <div class="dropdown-menu rounded-0 m-0">
-                                
                                 <a href="editAccount.php" class="dropdown-item">Edit My Account</a>
-                                
                                 <a href="myProperties.php" class="dropdown-item">My Properties</a>
                                 <a href="messages.php" class="dropdown-item">Messages</a>
-
                                 <a href="addProperty.php" class="dropdown-item">Add Property</a>
                                 <a href="logout.php" class="dropdown-item">Logout</a>
                             </div>
@@ -91,17 +76,12 @@
                 </div>
             </nav>
         </div>
-        <!-- Navbar End -->
 
-        <!-- Header Start -->
         <div class="container-fluid bg-white p-0">
             <div class="row g-0 align-items-center flex-column-reverse flex-md-row">
                 <div class="col-md-6 p-5">
-                    <h1 class="display-5 mb-4">Welcome <span class="text-primary"> <i><?= $name ?></i></span>  to<span class="text-primary"> HomeIt</span>!</h1>
-                    <p class="mb-4">Your journey of finding the perfect home starts here. 
-                        Explore a variety of homes that offer comfort, convenience, and style, all designed with your family's needs in mind. 
-                        Whether you're looking for spacious living rooms, top-notch amenities, or safe neighborhoods, we’ve got you covered. 
-                        Start browsing today and take the first step toward creating a new, happy chapter for your family!</p>
+                    <h1 class="display-5 mb-4" style="font-family: 'Inter', sans-serif; color: #2a2a2a;">Welcome <span class="text-primary"><i><?= $name ?></i></span> to <span class="text-primary">HomeIt</span>!</h1>
+                    <p class="mb-4">Our platform provides a seamless way to list your property for sale and connect with potential buyers. Simplify your property transactions with our user-friendly system and gain visibility for your real estate listings.</p>
                     <a href="#" class="btn btn-primary py-3 px-5">Get Started</a>
                 </div>
                 <div class="col-md-6">
@@ -111,48 +91,47 @@
                 </div>
             </div>
         </div>
-        <!-- Header End -->
 
-
-
-        <!-- Search Section Start -->
-        <div class="container-fluid bg-primary mb-5 " style="padding: 35px;">
+        <div class="container-fluid bg-primary mb-5" style="padding: 35px;">
             <div class="container">
-                <div class="row g-2">
-                    <div class="col-md-10">
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <input type="text" class="form-control border-0 py-3" placeholder="Search Keyword">
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select border-0 py-3">
-                                    <option selected>Property Type</option>
-                                    <option value="1">House</option>
-                                    <option value="2">Apartment</option>
-                                    <option value="3">Villa</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select border-0 py-3">
-                                    <option selected>Location</option>
-                                    <option value="1">Saida</option>
-                                    <option value="2">Tyre</option>
-                                    <option value="3">Beirut</option>
-                                </select>
-                            </div>
+                <form action="myProperties.php" method="get">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control border-0 py-3" name="keyword" placeholder="Search Keyword">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select border-0 py-3" name="type_id">
+                                <option value="">Property Type</option>
+                                <?php
+                                $result = $con->query("SELECT * FROM property_types");
+                                while ($row = mysqli_fetch_assoc($result)) {
+                                    echo "<option value='{$row['type_id']}'>{$row['type']}</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select border-0 py-3" name="city_id">
+                                <option value="">Location</option>
+                                <?php
+                                $result = $con->query("SELECT * FROM cities");
+                                while ($row = mysqli_fetch_assoc($result)) {
+                                    echo "<option value='{$row['city_id']}'>{$row['city']}</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-dark border-0 w-100 py-3">Search</button>
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-dark border-0 w-100 py-3">Search</button>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
         <!-- Search Section End -->
 
-
-        <!-- About Start -->
-        <div class="container-xxl py-5">
+         <!-- About Start -->
+         <div class="container-xxl py-5">
             <div class="container">
                 <div class="row g-5 align-items-center">
                     <div class="col-lg-6">
@@ -169,91 +148,94 @@
                         <p><i class="fa fa-check text-primary me-3"></i>Browse properties that match your vision and budget.</p>
                         <p><i class="fa fa-check text-primary me-3"></i>From start to finish, we`re here to guide you to your perfect property.</p>
                         <p><i class="fa fa-check text-primary me-3"></i>Start your journey to a new home with our trusted guidance.</p>
-                        <a class="btn btn-primary py-3 px-5 mt-3" href="about.html">Read More</a>
+                        <a class="btn btn-primary py-3 px-5 mt-3" href="backend_index.php">Read More</a>
                     </div>
                 </div>
             </div>
         </div>
         <!-- About End -->
+         
 
-
-       <!-- Property List Start -->
-<div class="container-xxl py-5">
-    <div class="container">
-        <div class="row g-0 gx-5 align-items-end">
-            <!-- Section Title -->
-            <div class="col-lg-6">
-                <div class="text-start mx-auto mb-5">
-                    <h1 class="mb-3">Property Listing</h1>
-                    <p>Check out our latest property listings, offering a range of options for every taste and budget. 
-                        Detailed information and high-quality images help you find your ideal home.</p>
-                </div>
-            </div>
-            <!-- Tabs -->
-            <div class="col-lg-6 text-start text-lg-end">
-                <ul class="nav nav-pills d-inline-flex justify-content-end mb-5">
+        <!-- Property List Start -->
+        <div class="container mb-5">
+            <h1 class="heading text-center">My Property List</h1>
+            <div class="d-flex justify-content-end mb-3">
+                <ul class="nav nav-pills">
                     <li class="nav-item me-2">
-                        <a class="btn btn-outline-primary active" data-bs-toggle="pill" href="#tab-1">Featured</a>
+                        <a href="?status=all" class="btn btn-outline-primary <?= $status_filter === 'all' ? 'active' : '' ?>">All</a>
                     </li>
                     <li class="nav-item me-2">
-                        <a class="btn btn-outline-primary" data-bs-toggle="pill" href="#tab-2">For Sale</a>
+                        <a href="?status=available" class="btn btn-outline-primary <?= $status_filter === 'available' ? 'active' : '' ?>">Available</a>
                     </li>
-                    <li class="nav-item me-0">
-                        <a class="btn btn-outline-primary" data-bs-toggle="pill" href="#tab-3">For Rent</a>
+                    <li class="nav-item me-2">
+                        <a href="?status=sold" class="btn btn-outline-primary <?= $status_filter === 'sold' ? 'active' : '' ?>">Sold</a>
+                    </li>
+                    <li class="nav-item me-2">
+                        <a href="?status=rented" class="btn btn-outline-primary <?= $status_filter === 'rented' ? 'active' : '' ?>">Rented</a>
                     </li>
                 </ul>
             </div>
-        </div>
 
-        <!-- Tab Content -->
-        <div class="tab-content">
-            <?php 
-            // Tabs Array
-            $all_properties = $con->query("SELECT * FROM properties ORDER BY RAND() LIMIT 6");
-            $sell_properties = $con->query("SELECT * FROM properties WHERE purpose = 'for sell' ORDER BY RAND() LIMIT 6");
-            $rent_properties = $con->query("SELECT * FROM properties WHERE purpose = 'for rent' ORDER BY RAND() LIMIT 6");
-
-            $tabs = [
-                'tab-1' => $all_properties,
-                'tab-2' => $sell_properties,
-                'tab-3' => $rent_properties,
-            ];
-            foreach ($tabs as $tabId => $properties): ?>
-            <div id="<?= $tabId ?>" class="tab-pane fade <?= $tabId === 'tab-1' ? 'show active' : '' ?> p-0">
-                <div class="row g-4">
-                    <?php while ($row = mysqli_fetch_assoc($properties)): ?>
-                    <!-- Property Card -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="property-item rounded overflow-hidden">
-                            <!-- Property Image -->
-                            <div class="position-relative overflow-hidden">
-                                <a href=""><img class="img-fluid" src="<?= $row["main_image"]; ?>" alt=""></a>
-                                <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3"><?= $row["purpose"]; ?></div>
-                                <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3"><?= $row["property_type"]; ?></div>
-                            </div>
-                            <!-- Property Info -->
-                            <div class="p-4 pb-0">
-                                <h5 class="text-primary mb-3">$<?= $row["price"]; ?></h5>
-                                <a class="d-block h5 mb-2" href=""><?= $row["title"]; ?></a>
-                                <p><i class="fa fa-map-marker-alt text-primary me-2"></i><?= $row["address"]; ?></p>
-                            </div>
-                            <!-- Property Details -->
-                            <div class="d-flex border-top">
-                                <small class="flex-fill text-center border-end py-2"><i class="fa fa-ruler-combined text-primary me-2"></i><?= $row["sqft"]; ?> Sqft</small>
-                                <small class="flex-fill text-center border-end py-2"><i class="fa fa-bed text-primary me-2"></i><?= $row["bedrooms"]; ?> Bed</small>
-                                <small class="flex-fill text-center py-2"><i class="fa fa-bath text-primary me-2"></i><?= $row["bathrooms"]; ?> Bath</small>
-                            </div>
+            <?php if (mysqli_num_rows($my_properties) == 0) { ?>
+                <div class="text-center">
+                    <h4 class="text-muted">No Properties found!</h4>
+                    <img src="../img/no_property.jpg" alt="No Properties" class="img-fluid my-3" style="max-width: 300px;">
+                    <p class="text-muted">There are currently no properties for this filter.</p>
+                </div>
+            <?php } else { ?>
+                <div class="row g-3">
+                    <?php 
+                    $count = 0; 
+                    while ($row = mysqli_fetch_assoc($my_properties)): 
+                        if ($count >= 6) break; 
+                        $count++;
+                    ?>
+                        <div class="col-md-4">
+                            <a href="property_details.php?id=<?= $row['property_id'] ?>" class="text-decoration-none">
+                                <div class="property-card border rounded shadow-sm" style="padding: 10px;">
+                                    <div class="position-relative">
+                                        <img src="<?= $row['main_image'] ?: '../img/z-image1.webp' ?>" alt="Property" class="img-fluid">
+                                        <span class="badge bg-primary position-absolute" style="top: 10px; left: 10px;">
+                                            <?= ucfirst($row['status']) ?>
+                                        </span>
+                                    </div>
+                                    <div class="p-2 text-center">
+                                        <h5 class="property-title mb-1" style="font-size: 1.1rem;"><?= $row['title'] ?></h5>
+                                    </div>
+                                </div>
+                            </a>
                         </div>
-                    </div>
                     <?php endwhile; ?>
+                </div>
 
+                <!-- View More Button -->
+                <div class="text-center mt-4">
+                    <a href="myProperties.php?status=<?= $status_filter ?>" class="btn btn-primary px-5 py-2">View More</a>
+                </div>
+            <?php } ?>
+        </div>
+        <!-- Property List End -->
+
+
+        <!-- Add Property Section Start -->
+        <div class="container py-5 bg-light rounded shadow-sm mt-5">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2 class="mb-4 text-primary fw-bold">Add Your Property Today</h2>
+                    <p class="mb-5 fs-5 text-muted">
+                        Easily list your property on HomeIt and connect with a vast network of potential buyers and renters. 
+                        Showcase your property’s unique features and make your listing stand out. Whether it's for sale or rent, 
+                        we provide you with the right tools to attract the right audience. Don’t wait, take the first step toward
+                        finding the perfect deal.
+                    </p>
+                    <a href="addProperty.php" class="btn btn-primary px-5 py-3 shadow-sm">List Your Property</a>
+                </div>
+                <div class="col-md-6 text-center">
+                    <img src="../img/z-photo5.jpg" alt="Add Property" style="width: 400px;" class="img-fluid rounded shadow-lg">
                 </div>
             </div>
-            <?php endforeach; ?>
         </div>
-    </div>
-</div>
-<!-- Property List End -->
+        <!-- Add Property Section End -->
 
 
         <!-- Testimonial Start -->
@@ -277,8 +259,14 @@
                                         src="../img/dumbo.jfif" 
                                         style="width: 45px; height: 45px;">
                                     <div class="ps-3">
-                                        <h6 class="fw-bold mb-1"><?php echo htmlspecialchars($row["name"]); ?></h6>
-                                        <small>client</small>
+                                    <?php 
+                                        $query="select name from users where user_id=".$row['user_id'];
+                                        $result = mysqli_query($con, $query);  // Assuming $con is the active MySQL connection
+                                        $property = mysqli_fetch_assoc($result);
+                                        $name = $property ? $property['name'] : 'Unknown';
+                                    ?>
+                                        <h6 class="fw-bold mb-1"><?php echo $name; ?></h6>
+                                        <small>user</small>
                                     </div>
                                 </div>
                             </div>
@@ -350,6 +338,31 @@
         <!-- Back to Top -->
         <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
+
+    <script>
+        // Save the scroll position in local storage before navigating to another filter
+        function saveScrollPosition() {
+            localStorage.setItem('scrollPosition', window.scrollY);
+        }
+
+        // Restore the scroll position when the page loads
+        function restoreScrollPosition() {
+            const scrollPosition = localStorage.getItem('scrollPosition');
+            if (scrollPosition) {
+                window.scrollTo(0, parseInt(scrollPosition));
+                localStorage.removeItem('scrollPosition');  // Clear after restoring to avoid issues on subsequent loads
+            }
+        }
+
+        // Attach click event to all filter buttons
+        window.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.nav-pills .btn').forEach(button => {
+                button.addEventListener('click', saveScrollPosition);
+            });
+            restoreScrollPosition();
+        });
+
+    </script>
 
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>

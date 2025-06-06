@@ -1,0 +1,263 @@
+<?php
+include '../inc/connection2.php'; // Ensure $con is a PDO instance
+
+// Fetch the wishlist from cookies
+$wishlist = [];
+if (isset($_COOKIE['wishlist'])) {
+    $wishlist = json_decode($_COOKIE['wishlist'], true);
+}
+if (is_array($wishlist)) {
+    $wishlist = array_map('intval', $wishlist);
+} else {
+    $wishlist = [];
+}
+$properties = [];
+if (count($wishlist) > 0) {
+    $placeholders = implode(',', array_fill(0, count($wishlist), '?'));
+
+    // Prepare and execute the statement
+    $stmt = $con->prepare("SELECT * FROM properties WHERE property_id IN ($placeholders)");
+    $stmt->execute($wishlist); // Binding is automatic when using execute with an array
+    $properties = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta charset="utf-8">
+    <title>HomeIt - Your Trusted Partner in Finding the Perfect Home</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <!-- Favicon -->
+    <link href="../img/icon.png" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Inter:wght@700;800&display=swap" rel="stylesheet">
+
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Template Stylesheet -->
+    <link href="../css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container-xxl bg-white p-0">
+        <!-- Navbar Start -->
+        <div class="container-fluid nav-bar bg-transparent">
+            <nav class="navbar navbar-expand-lg bg-white navbar-light py-0 px-4">
+                <a href="index.php" class="navbar-brand d-flex align-items-center text-center">
+                    <div class="icon p-2 me-2">
+                        <img class="img-fluid" src="../img/icon.png" alt="Icon" style="width: 30px; height: 30px;">
+                    </div>
+                    <h1 class="m-0 text-primary">HomeIt</h1>
+                </a>
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <div class="navbar-nav ms-auto">
+                        <a href="index.php" class="nav-item nav-link">Home</a>
+                        <a href="about.php" class="nav-item nav-link">About</a>
+                        <div class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle active" data-bs-toggle="dropdown">Property</a>
+                            <div class="dropdown-menu rounded-0 m-0">
+                                <a href="../frontend/property-list.php" class="dropdown-item active">Property List</a>
+                                <a href="../frontend/property_type.php" class="dropdown-item">Property Type</a>
+                            </div>
+                        </div>
+                        <div class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
+                            <div class="dropdown-menu rounded-0 m-0">
+                                <a href="../sign_up_sign_in/register.php" class="dropdown-item">SignUp</a>
+                                <a href="../sign_up_sign_in/login.php" class="dropdown-item">Login</a>
+                                <a href="wishlist.php" class="dropdown-item">My Wishlist</a>
+                            </div>
+                        </div>
+                        <a href="contact.php" class="nav-item nav-link">Contact</a>
+                    </div>
+                    <a href="../sign_up_sign_in/login.php" class="btn btn-primary px-3 d-none d-lg-flex">Login</a>
+                </div>
+            </nav>
+        </div>
+        <!-- Navbar End -->
+
+        <!-- Property List Start -->
+        <div class="container-xxl py-5" id="property-listing">
+            <div class="container">
+                <h1 class="mb-5 text-center">Wishlist Properties</h1>
+                <div class="row g-4">
+                    <?php if (count($properties) > 0): ?>
+                        <?php foreach ($properties as $row): ?>
+                            <div class="col-lg-4 col-md-6 property-item" data-property-id="<?= $row['property_id'] ?>">
+                                <div class="property-item rounded overflow-hidden">
+                                    <div class="position-relative overflow-hidden">
+                                        <a href="property_details.php?id=<?= $row['property_id'] ?>">
+                                            <img class="img-fluid" src="<?= $row['main_image'] ?: '../img/z-image1.webp' ?>" alt="">
+                                        </a>
+                                        <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">
+                                            <?= $row["purpose"] ?>
+                                        </div>
+                                    </div>
+                                    <div class="p-4 pb-0">
+                                        <h5 class="text-primary mb-3">$<?= $row["price"] ?></h5>
+                                        <a class="d-block h5 mb-2" href="property_details.php?id=<?= $row['property_id'] ?>">
+                                            <?= $row["title"] ?>
+                                        </a>
+                                        <p>
+                                            <i class="fa fa-map-marker-alt text-primary me-2"></i><?= $row["address"] ?>
+                                            <!-- Delete icon at the end -->
+                                            <button class="delete-btn btn btn-outline-danger btn-sm float-end" data-property-id="<?= $row['property_id'] ?>">
+                                                <i class="fa fa-trash"></i> Remove
+                                            </button>
+                                        </p>
+                                    </div>
+                                    <div class="d-flex border-top">
+                                        <small class="flex-fill text-center border-end py-2">
+                                            <i class="fa fa-ruler-combined text-primary me-2"></i><?= $row["sqft"] ?> Sqft
+                                        </small>
+                                        <small class="flex-fill text-center border-end py-2">
+                                            <i class="fa fa-bed text-primary me-2"></i><?= $row["bedrooms"] ?> Bed
+                                        </small>
+                                        <small class="flex-fill text-center py-2">
+                                            <i class="fa fa-bath text-primary me-2"></i><?= $row["bathrooms"] ?> Bath
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+
+                    <?php else: ?>
+                        <div class="col-12 text-center">
+                            <img src="../img/no_property.jpg" alt="No properties found" class="img-fluid mb-3" style="max-width: 300px; height: auto;">
+                            <p>No properties in the Wishlist</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <!-- Property List End -->
+
+        <!-- Footer Start -->
+        <div class="container-fluid bg-dark text-white-50 footer pt-5 mt-5">
+            <div class="container py-5">
+                <div class="row g-5">
+                    <div class="col-lg-4 col-md-6">
+                        <h5 class="text-white mb-4">Get In Touch</h5>
+                        <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>Saida, Lebanon</p>
+                        <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+961 001 563</p>
+                        <p class="mb-2"><i class="fa fa-envelope me-3"></i>HomeIt@gmail.com</p>
+                        <div class="d-flex pt-2">
+                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-twitter"></i></a>
+                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-facebook-f"></i></a>
+                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-youtube"></i></a>
+                            <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <h5 class="text-white mb-4">Quick Links</h5>
+                        <a class="btn btn-link text-white-50" href="about.php">About Us</a>
+                        <a class="btn btn-link text-white-50" href="contact.php">Contact Us</a>
+                        <a class="btn btn-link text-white-50" href="properties-list.php">Properties List</a>
+                        <a class="btn btn-link text-white-50" href="">Privacy Policy</a>
+                        <a class="btn btn-link text-white-50" href="">Terms & Condition</a>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <h5 class="text-white mb-4">About HomeIt</h5>
+                        <p>HomeIt is your trusted partner in finding your dream home. Whether you're looking for apartments, villas, or real estate trends, we provide expert guidance every step of the way.</p>
+                        <p><i class="fa fa-heart text-primary"></i> Built with passion and commitment.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="copyright">
+                    <div class="row">
+                        <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                            &copy; <a class="border-bottom" href="#">HomeIt</a>
+                        </div>
+                        <div class="col-md-6 text-center text-md-end">
+                            <div class="footer-menu">
+                                <a href="#">Home</a>
+                                <a href="#">Cookies</a>
+                                <a href="#">Help</a>
+                                <a href="#">FAQs</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Footer End -->
+
+
+        <!-- Back to Top -->
+        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Function to get the wishlist from cookies
+            function getWishlist() {
+                const wishlistCookie = document.cookie
+                    .split("; ")
+                    .find((row) => row.startsWith("wishlist="));
+                try {
+                    return wishlistCookie ? JSON.parse(decodeURIComponent(wishlistCookie.split("=")[1])) : [];
+                } catch (error) {
+                    console.error("Failed to parse wishlist cookie:", error);
+                    return [];
+                }
+            }
+
+            // Function to save the wishlist to cookies
+            function saveWishlist(wishlist) {
+                const expiryDate = new Date();
+                expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+                document.cookie = `wishlist=${encodeURIComponent(
+                    JSON.stringify(wishlist)
+                )}; expires=${expiryDate.toUTCString()}; path=/`;
+            }
+
+            // Function to delete a property from the wishlist and reload the page
+            function deleteProperty(propertyId) {
+                let wishlist = getWishlist();
+                wishlist = wishlist.filter((id) => id !== parseInt(propertyId));
+                saveWishlist(wishlist);
+
+                // Remove the property element from the DOM
+                document.querySelector(`[data-property-id="${propertyId}"]`).closest('.property-item').remove();
+            }
+
+            document.body.addEventListener("click", function (e) {
+                if (e.target.closest(".delete-btn")) {
+                    const button = e.target.closest(".delete-btn");
+                    const propertyId = button.getAttribute("data-property-id");
+                    deleteProperty(propertyId);
+                }
+            });
+
+        });
+    </script>
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/wow/wow.min.js"></script>
+    
+    <!-- Template Javascript -->
+    <script src="../js/main.js"></script>
+
+</body>
+
+</html>

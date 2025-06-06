@@ -43,7 +43,7 @@
             <nav class="navbar navbar-expand-lg bg-white navbar-light py-0 px-4">
                 <a href="index.php" class="navbar-brand d-flex align-items-center text-center">
                     <div class="icon p-2 me-2">
-                        <img class="img-fluid" src="../mg/icon.png" alt="Icon" style="width: 30px; height: 30px;">
+                        <img class="img-fluid" src="../img/icon.png" alt="Icon" style="width: 30px; height: 30px;">
                     </div>
                     <h1 class="m-0 text-primary">HomeIt</h1>
                 </a>
@@ -53,9 +53,15 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto">
                         <a href="index.php" class="nav-item nav-link">Home</a>
-                        <a href="about.html" class="nav-item nav-link">About</a>
+                        <a href="about.php" class="nav-item nav-link">About</a>
                         
-                            <a href="property-list.php" class="nav-item nav-link">Property List</a>
+                            <div class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Property</a>
+                            <div class="dropdown-menu rounded-0 m-0">
+                                <a href="../frontend/property-list.php" class="dropdown-item">Property List</a>
+                                <a href="../frontend/property_type.php" class="dropdown-item">Property Type</a>
+                            </div>
+                        </div>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle active" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu rounded-0 m-0">
@@ -96,40 +102,66 @@
         <!-- Header End -->
 
 
-        <!-- Search Start -->
-        <div class="container-fluid bg-primary mb-5 " style="padding: 35px;">
+        
+        <!-- Search Section Start -->
+        <div class="container-fluid bg-primary mb-5" style="padding: 35px;">
             <div class="container">
                 <div class="row g-2">
-                    <div class="col-md-10">
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <input type="text" class="form-control border-0 py-3" placeholder="Search Keyword">
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select border-0 py-3">
-                                    <option selected>Property Type</option>
-                                    <option value="1">House</option>
-                                    <option value="2">Apartment</option>
-                                    <option value="3">Villa</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select border-0 py-3">
-                                    <option selected>Location</option>
-                                    <option value="1">Saida</option>
-                                    <option value="2">Tyre</option>
-                                    <option value="3">Beirut</option>
-                                </select>
+                    <!-- Start Form -->
+                     <Center>
+                    <form action="property-list.php" method="get">
+                        <div class="col-md-10">
+                            <div class="row g-2">
+                                <!-- Search Keyword -->
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control border-0 py-3" name="keyword" placeholder="Search Keyword" value="<?= isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '' ?>">
+                                </div>
+
+                                <!-- Property Type -->
+                                <div class="col-md-3">
+                                    <select class="form-select border-0 py-3" name="type_id">
+                                        <option value="">Property Type</option>
+                                        <?php
+                                        // Fetch property types from the database
+                                        $result = $con->query("SELECT * FROM property_types");
+                                        while ($row = mysqli_fetch_assoc($result)) {
+                                            $selected = isset($_GET['type_id']) && $_GET['type_id'] == $row['type_id'] ? 'selected' : '';
+                                            echo "<option value='{$row['type_id']}' {$selected}>{$row['type']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+
+                                <!-- Location (City) -->
+                                <div class="col-md-3">
+                                    <select class="form-select border-0 py-3" name="city_id">
+                                        <option value="">Location</option>
+                                        <?php
+                                        // Fetch cities from the database
+                                        $result = $con->query("SELECT * FROM cities");
+                                        while ($row = mysqli_fetch_assoc($result)) {
+                                            $selected = isset($_GET['city_id']) && $_GET['city_id'] == $row['city_id'] ? 'selected' : '';
+                                            echo "<option value='{$row['city_id']}' {$selected}>{$row['city']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-dark border-0 w-100 py-3">Search</button>
+                                </div>  
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-dark border-0 w-100 py-3">Search</button>
-                    </div>
+
+                        <!-- Search Button -->
+                          
+                    </form></Center>
+                    <!-- End Form -->
                 </div>
             </div>
         </div>
         <!-- Search Section End -->
+
 
         <?php
 
@@ -188,7 +220,7 @@
                     </div>
                     <div class="col-lg-4 col-md-6">
                         <h5 class="text-white mb-4">Quick Links</h5>
-                        <a class="btn btn-link text-white-50" href="about.html">About Us</a>
+                        <a class="btn btn-link text-white-50" href="about.php">About Us</a>
                         <a class="btn btn-link text-white-50" href="contact.php">Contact Us</a>
                         <a class="btn btn-link text-white-50" href="properties-list.php">Properties List</a>
                         <a class="btn btn-link text-white-50" href="">Privacy Policy</a>

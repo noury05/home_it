@@ -54,9 +54,15 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto">
                         <a href="frontend/index.php" class="nav-item nav-link active">Home</a>
-                        <a href="frontend/about.html" class="nav-item nav-link">About</a>
+                        <a href="frontend/about.php" class="nav-item nav-link">About</a>
                         
-                            <a href="frontend/property-list.php" class="nav-item nav-link">Property List</a>
+                            <div class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Property</a>
+                            <div class="dropdown-menu rounded-0 m-0">
+                                <a href="frontend/property-list.php" class="dropdown-item ">Property List</a>
+                                <a href="frontend/property_type.php" class="dropdown-item">Property Type</a>
+                            </div>
+                        </div>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu rounded-0 m-0">
@@ -64,7 +70,7 @@
                                 <a href="sign_up_sign_in/register.php" class="dropdown-item">SignUp</a>
                                 
                                 <a href="sign_up_sign_in/login.php" class="dropdown-item">Login</a>
-                                <a href="frontend/testimonial.php" class="dropdown-item">Testimonial</a>
+                                <a href="frontend/wishlist.php" class="dropdown-item">My Wishlist</a>
                             </div>
                         </div>
                         <a href="frontend/contact.php" class="nav-item nav-link">Contact</a>
@@ -94,39 +100,65 @@
 
 
 
+        
         <!-- Search Section Start -->
-        <div class="container-fluid bg-primary mb-5 " style="padding: 35px;">
+        <div class="container-fluid bg-primary mb-5" style="padding: 35px;">
             <div class="container">
                 <div class="row g-2">
-                    <div class="col-md-10">
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <input type="text" class="form-control border-0 py-3" placeholder="Search Keyword">
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select border-0 py-3">
-                                    <option value="1">House</option>
-                                    <option value="2">Apartment</option>
-                                    <option value="3">Villa</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select border-0 py-3">
-                                    <option value="1">Saida</option>
-                                    <option value="2">Tyre</option>
-                                    <option value="3">Beirut</option>
-                                </select>
+                    <!-- Start Form -->
+                     <Center>
+                    <form action="frontend/property-list.php" method="get">
+                        <div class="col-md-10">
+                            <div class="row g-2">
+                                <!-- Search Keyword -->
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control border-0 py-3" name="keyword" placeholder="Search Keyword" value="<?= isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '' ?>">
+                                </div>
+
+                                <!-- Property Type -->
+                                <div class="col-md-3">
+                                    <select class="form-select border-0 py-3" name="type_id">
+                                        <option value="">Property Type</option>
+                                        <?php
+                                        // Fetch property types from the database
+                                        $result = $con->query("SELECT * FROM property_types");
+                                        while ($row = mysqli_fetch_assoc($result)) {
+                                            $selected = isset($_GET['type_id']) && $_GET['type_id'] == $row['type_id'] ? 'selected' : '';
+                                            echo "<option value='{$row['type_id']}' {$selected}>{$row['type']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+
+                                <!-- Location (City) -->
+                                <div class="col-md-3">
+                                    <select class="form-select border-0 py-3" name="city_id">
+                                        <option value="">Location</option>
+                                        <?php
+                                        // Fetch cities from the database
+                                        $result = $con->query("SELECT * FROM cities");
+                                        while ($row = mysqli_fetch_assoc($result)) {
+                                            $selected = isset($_GET['city_id']) && $_GET['city_id'] == $row['city_id'] ? 'selected' : '';
+                                            echo "<option value='{$row['city_id']}' {$selected}>{$row['city']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-dark border-0 w-100 py-3">Search</button>
+                                </div>  
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-dark border-0 w-100 py-3">Search</button>
-                    </div>
+
+                        <!-- Search Button -->
+                          
+                    </form></Center>
+                    <!-- End Form -->
                 </div>
             </div>
         </div>
         <!-- Search Section End -->
-
 
         <!-- About Start -->
         <div class="container-xxl py-5">
@@ -146,12 +178,58 @@
                         <p><i class="fa fa-check text-primary me-3"></i>Browse properties that match your vision and budget.</p>
                         <p><i class="fa fa-check text-primary me-3"></i>From start to finish, we`re here to guide you to your perfect property.</p>
                         <p><i class="fa fa-check text-primary me-3"></i>Start your journey to a new home with our trusted guidance.</p>
-                        <a class="btn btn-primary py-3 px-5 mt-3" href="frontend/about.html">Read More</a>
+                        <a class="btn btn-primary py-3 px-5 mt-3" href="frontend/about.php">Read More</a>
                     </div>
                 </div>
             </div>
         </div>
         <!-- About End -->
+
+
+        <!-- Category Start -->
+        <div class="container-xxl py-5">
+            <div class="container">
+                <div class="text-center mx-auto mb-5" style="max-width: 600px;">
+                    <h1 class="mb-3">Property Types</h1>
+                    <p>This section outlines the various property types available, 
+                        including houses, villas, shops, apartments, and offices.</p>
+                </div>
+                <div class="row g-4">
+                    <?php
+                    // Query to fetch all property types and their images
+                    $query = "SELECT type_id, type, image FROM property_types";
+                    $result = mysqli_query($con, $query);
+
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        $type_id = $row['type_id'];
+                        $type = $row['type'];
+                        $image = $image = substr($row['image'], 3);
+
+                        // Query to count properties of the current type
+                        $count_query = "SELECT COUNT(*) AS property_count FROM properties WHERE type_id = $type_id and status='available'";
+                        $count_result = mysqli_query($con, $count_query);
+                        $count_row = mysqli_fetch_assoc($count_result);
+                        $property_count = $count_row['property_count'] ?? 0;
+                    ?>
+                        <div class="col-lg-3 col-sm-6">
+                            <a class="cat-item d-block bg-light text-center rounded p-3" href="frontend/property-list.php?type_id=<?php echo urlencode($type_id); ?>">
+                                <div class="rounded p-4">
+                                    <div class="icon mb-3">
+                                        <img class="img-fluid" src="<?php echo $image; ?>" alt="<?php echo $type; ?>" style="width: 60px; height: 60px;">
+                                    </div>
+                                    <h6><?php echo $type; ?></h6>
+                                    <span class="font-weight-bolder mb-0">
+                                        <?php echo $property_count; ?> properties
+                                    </span>
+                                </div>
+                            </a>
+                        </div>
+                    <?php } ?>
+                </div>
+            </div>
+        </div>
+        <!-- Category End -->
+
 
 
        <!-- Property List Start -->
@@ -198,28 +276,38 @@
                     <div id="<?= $tabId ?>" class="tab-pane fade <?= $tabId === 'tab-1' ? 'show active' : '' ?> p-0">
                         <div class="row g-4">
                             <?php while ($row = mysqli_fetch_assoc($properties)): ?>
-                                <!-- Property Card -->
-                                <div class="col-lg-4 col-md-6">
+                                 <!-- Property Card -->
+                                 <div class="col-lg-4 col-md-6">
                                     <div class="property-item rounded overflow-hidden">
-                                        <!-- Property Image -->
                                         <div class="position-relative overflow-hidden">
+                                            <a href="frontend/property_details.php?id=<?= $row['property_id'] ?>">
                                             <?php $image = $row["main_image"];
                                                 $image = substr($image, 3); ?>
-                                            <a href="frontend/property_details.php?id=<?= $row['property_id'] ?>">
-                                                <img class="img-fluid" src='<?= $image ?: '../img/z-image1.webp' ?>' alt="">
+                                                <img class="img-fluid" src="<?= $image ?: 'img/z-image1.webp' ?>" alt="" style="width: 3000px; height: 300px; object-fit: cover;">
                                             </a>
                                             <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3">
                                                 <?= $row["purpose"] ?>
                                             </div>
-                                            <?php 
-                                            $type_query = $con->query("SELECT type FROM property_types WHERE type_id = " . $row['type_id']);
-                                            $property_type = mysqli_fetch_assoc($type_query)['type'];
-                                            ?>
-                                            <div class="bg-white rounded-top text-primary position-absolute start-0 bottom-0 mx-4 pt-1 px-3">
-                                                <?= $property_type ?>
+                                            <!-- Wishlist Button -->
+                                            <button 
+                                                class="wishlist-btn btn btn-outline-danger position-absolute top-0 end-0 m-4" 
+                                                style="border-radius: 50%;display: flex;align-items: center;width: 40px;height: 40px;"
+                                                data-property-id="<?= $row['property_id'] ?>">
+                                                <i class="fa fa-heart"></i>
+                                            </button>
+                                            <div aria-live="polite" aria-atomic="true" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
+                                                <div id="wishlist-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+                                                    <div class="toast-header">
+                                                        <strong class="me-auto">Wishlist</strong>
+                                                        <small class="text-muted">just now</small>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="toast-body">
+                                                        Notification message here.
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <!-- Property Info -->
                                         <div class="p-4 pb-0">
                                             <h5 class="text-primary mb-3">$<?= $row["price"] ?></h5>
                                             <a class="d-block h5 mb-2" href="frontend/property_details.php?id=<?= $row['property_id'] ?>">
@@ -227,7 +315,6 @@
                                             </a>
                                             <p><i class="fa fa-map-marker-alt text-primary me-2"></i><?= $row["address"] ?></p>
                                         </div>
-                                        <!-- Property Details -->
                                         <div class="d-flex border-top">
                                             <small class="flex-fill text-center border-end py-2">
                                                 <i class="fa fa-ruler-combined text-primary me-2"></i><?= $row["sqft"] ?> Sqft
@@ -257,6 +344,14 @@
 
 
         <!-- Testimonial Start -->
+
+        <?php
+
+        $sql = "SELECT * FROM client_reviews ORDER BY RAND() LIMIT 4";
+        $all_reviews = $con->query($sql);
+
+        ?>
+
         <div class="container-xxl py-5">
             <div class="container">
                 <div class="text-center mx-auto mb-5"style="max-width: 600px;">
@@ -313,7 +408,7 @@
                     </div>
                     <div class="col-lg-4 col-md-6">
                         <h5 class="text-white mb-4">Quick Links</h5>
-                        <a class="btn btn-link text-white-50" href="frontend/about.html">About Us</a>
+                        <a class="btn btn-link text-white-50" href="frontend/about.php">About Us</a>
                         <a class="btn btn-link text-white-50" href="frontend/contact.php">Contact Us</a>
                         <a class="btn btn-link text-white-50" href="frontend/properties-list.php">Properties List</a>
                         <a class="btn btn-link text-white-50" href="">Privacy Policy</a>
@@ -358,6 +453,76 @@
     
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
+    <script>
+        
+        document.addEventListener("DOMContentLoaded", function () {
+            function getWishlist() {
+                const wishlistCookie = document.cookie
+                    .split("; ")
+                    .find((row) => row.startsWith("wishlist="));
+                try {
+                    return wishlistCookie ? JSON.parse(decodeURIComponent(wishlistCookie.split("=")[1])) : [];
+                } catch (error) {
+                    console.error("Failed to parse wishlist cookie:", error);
+                    return [];
+                }
+            }
+
+            function saveWishlist(wishlist) {
+                const expiryDate = new Date();
+                expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+                document.cookie = `wishlist=${encodeURIComponent(
+                    JSON.stringify(wishlist)
+                )}; expires=${expiryDate.toUTCString()}; path=/`;
+            }
+
+            function updateWishlistButtons() {
+                const wishlist = getWishlist();
+                document.querySelectorAll(".wishlist-btn").forEach((button) => {
+                    const propertyId = button.getAttribute("data-property-id");
+                    const icon = button.querySelector("i");
+
+                    if (wishlist.includes(propertyId)) {
+                        button.classList.add("active");
+                        icon.className = 'fa fa-heart'; // Filled heart icon
+                    } else {
+                        button.classList.remove("active");
+                        icon.className = 'fa fa-heart'; // Outline heart icon
+                    }
+                });
+            }
+
+            function showToast(message) {
+                const toastElement = document.getElementById('wishlist-toast');
+                const toastBody = toastElement.querySelector('.toast-body');
+                toastBody.textContent = message;
+                
+                const toast = new bootstrap.Toast(toastElement); // Initialize Bootstrap toast
+                toast.show(); // Show the toast
+            }
+
+            document.body.addEventListener("click", function (e) {
+                if (e.target.closest(".wishlist-btn")) {
+                    const button = e.target.closest(".wishlist-btn");
+                    const propertyId = button.getAttribute("data-property-id");
+                    let wishlist = getWishlist();
+
+                    if (wishlist.includes(propertyId)) {
+                        wishlist = wishlist.filter((id) => id !== propertyId);
+                        showToast("Removed from wishlist");
+                    } else {
+                        wishlist.push(propertyId);
+                        showToast("Added to wishlist");
+                    }
+
+                    saveWishlist(wishlist);
+                    updateWishlistButtons();
+                }
+            });
+
+            updateWishlistButtons();
+        });
+    </script>
 </body>
 
 </html>

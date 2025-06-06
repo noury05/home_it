@@ -1,5 +1,6 @@
 <?php
-    
+  include "../inc/connection.php";
+
   session_start();
   if (!isset($_SESSION['user_id'])){
     header("location:../sign_up_sign_in/login.php?error=2");
@@ -97,16 +98,25 @@
 
                 <!-- Address -->
                 <input type="text" name="property_address" placeholder="Address" required>
-
+                <h3>The property is for </h3>
+                <div>
+                    <label><input type="radio" name="purpose" value="for sell" required> Sell</label>
+                    <label><input type="radio" name="purpose" value="for rent" required> Rent</label>
+                </div>
                 <!-- City -->
                 <h3>City</h3>
-                <select name="property_city" required>
-                    <option value="">Select City</option>
+                <select id='cities' name="property_city" required>
+                <option value="">Select City</option>
                     <?php
-                    $cities = $con->query("SELECT city_id, city FROM cities");
-                    while ($city = $cities->fetch_assoc()): ?>
-                        <option value="<?= $city['city_id'] ?>"><?= $city['city'] ?></option>
-                    <?php endwhile; ?>
+                        $sql="SELECT * FROM cities";
+
+                        $result=mysqli_query($con,$sql);
+
+                        while($row=mysqli_fetch_assoc($result)){
+
+                        echo"<option value=".$row['city_id'].">".$row['city']."</option>";
+                        }
+                    ?>
                 </select><br>
 
                 <!-- Number of Bedrooms -->
@@ -139,16 +149,53 @@
 
                 <!-- Main Image -->
                 <h3>Main Image</h3>
-                <input type="file" name="main_image" accept="image/*" required><br>
+                <input type="file" name="main_image" accept="image/*" id="mainImageInput" required>
+                <img id="mainImagePreview" src="" alt="Main Image Preview" style="display:none; max-width: 200px; margin-top: 10px;"><br>
 
                 <!-- Gallery Images -->
                 <h3>Gallery Images</h3>
                 <div class="gallery-container">
-                    <input type="file" name="gallery_image_1" accept="image/*" required>
-                    <input type="file" name="gallery_image_2" accept="image/*" required>
-                    <input type="file" name="gallery_image_3" accept="image/*" required>
-                    <input type="file" name="gallery_image_4" accept="image/*" required>
+                    <input type="file" name="gallery_image_1" accept="image/*" id="galleryImageInput1" required>
+                    <img id="galleryImagePreview1" src="" alt="Gallery Image 1 Preview" style="display:none; max-width: 150px; margin-top: 10px;">
+                    
+                    <input type="file" name="gallery_image_2" accept="image/*" id="galleryImageInput2" required>
+                    <img id="galleryImagePreview2" src="" alt="Gallery Image 2 Preview" style="display:none; max-width: 150px; margin-top: 10px;">
+                    
+                    <input type="file" name="gallery_image_3" accept="image/*" id="galleryImageInput3" required>
+                    <img id="galleryImagePreview3" src="" alt="Gallery Image 3 Preview" style="display:none; max-width: 150px; margin-top: 10px;">
+                    
+                    <input type="file" name="gallery_image_4" accept="image/*" id="galleryImageInput4" required>
+                    <img id="galleryImagePreview4" src="" alt="Gallery Image 4 Preview" style="display:none; max-width: 150px; margin-top: 10px;">
                 </div><br>
+
+                <script>
+                                        
+                    function previewImage(inputElement, previewElementId) {
+                        const file = inputElement.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                const previewElement = document.getElementById(previewElementId);
+                                previewElement.src = e.target.result;
+                                previewElement.style.display = 'block';
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    }
+
+                    document.getElementById('mainImageInput').addEventListener('change', function() {
+                        previewImage(this, 'mainImagePreview');
+                    });
+
+                    for (let i = 1; i <= 4; i++) {
+                        const galleryInput = document.getElementById('galleryImageInput' + i);
+                        galleryInput.addEventListener('change', function() {
+                            previewImage(this, 'galleryImagePreview' + i);
+                        });
+                    }
+
+
+                </script>
 
                 <!-- Submit Button -->
                 <button type="submit" name="submit">Add Property</button>
@@ -219,6 +266,7 @@
     <script src="../js/wow/wow.min.js"></script>
     <!-- Template Javascript -->
     <script src="../js/main.js"></script>
+    
 
 </div>
 </body>

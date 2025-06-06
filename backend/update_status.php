@@ -12,10 +12,12 @@ if (isset($_POST['update_status'])){
 
     $new_status = $con->real_escape_string($_POST['status']);
 
-    $sql="UPDATE properties SET status = '$new_status' WHERE property_id = $id";
+    $sql="UPDATE properties SET status = '$new_status', updated_at = NOW() WHERE property_id = $id";
     mysqli_query($con,$sql);
-    header("Location: property_details.php?id=$id");
-}
+    $_SESSION['toast_message'] = 'status changed';
 
+        // Redirect to myProperties.php
+        header("Location: myProperties.php");
+}
 
 ?>

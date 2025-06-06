@@ -1,3 +1,10 @@
+<?php
+
+  require_once '../inc/connection.php';
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -44,9 +51,15 @@
                 <div class="collapse navbar-collapse" id="navbarCollapse">
                     <div class="navbar-nav ms-auto">
                         <a href="index.php" class="nav-item nav-link">Home</a>
-                        <a href="about.html" class="nav-item nav-link active">About</a>
+                        <a href="about.php" class="nav-item nav-link active">About</a>
                         
-                            <a href="property-list.php" class="nav-item nav-link">Property List</a>
+                            <div class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Property</a>
+                                <div class="dropdown-menu rounded-0 m-0">
+                                    <a href="../frontend/property-list.php" class="dropdown-item">Property List</a>
+                                    <a href="../frontend/property_type.php" class="dropdown-item">Property Type</a>
+                                </div>
+                            </div>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu rounded-0 m-0">
@@ -54,7 +67,7 @@
                                 <a href="../sign_up_sign_in/register.php" class="dropdown-item">SignUp</a>
                                 
                                 <a href="../sign_up_sign_in/login.php" class="dropdown-item">Login</a>
-                                <a href="testimonial.php" class="dropdown-item">Testimonial</a>
+                                <a href="wishlist.php" class="dropdown-item">My Wishlist</a>
                             </div>
                         </div>
                         <a href="contact.php" class="nav-item nav-link">Contact</a>
@@ -87,40 +100,65 @@
         <!-- Header End -->
 
 
-        <!-- Search Start -->
+        <!-- Search Section Start -->
         <div class="container-fluid bg-primary mb-5" style="padding: 35px;">
             <div class="container">
                 <div class="row g-2">
-                    <div class="col-md-10">
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <input type="text" class="form-control border-0 py-3" placeholder="Search Keyword">
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select border-0 py-3">
-                                    <option selected>Property Type</option>
-                                    <option value="1">Property Type 1</option>
-                                    <option value="2">Property Type 2</option>
-                                    <option value="3">Property Type 3</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select border-0 py-3">
-                                    <option selected>Location</option>
-                                    <option value="1">Location 1</option>
-                                    <option value="2">Location 2</option>
-                                    <option value="3">Location 3</option>
-                                </select>
+                    <!-- Start Form -->
+                     <Center>
+                    <form action="property-list.php" method="get">
+                        <div class="col-md-10">
+                            <div class="row g-2">
+                                <!-- Search Keyword -->
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control border-0 py-3" name="keyword" placeholder="Search Keyword" value="<?= isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '' ?>">
+                                </div>
+
+                                <!-- Property Type -->
+                                <div class="col-md-3">
+                                    <select class="form-select border-0 py-3" name="type_id">
+                                        <option value="">Property Type</option>
+                                        <?php
+                                        // Fetch property types from the database
+                                        $result = $con->query("SELECT * FROM property_types");
+                                        while ($row = mysqli_fetch_assoc($result)) {
+                                            $selected = isset($_GET['type_id']) && $_GET['type_id'] == $row['type_id'] ? 'selected' : '';
+                                            echo "<option value='{$row['type_id']}' {$selected}>{$row['type']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+
+                                <!-- Location (City) -->
+                                <div class="col-md-3">
+                                    <select class="form-select border-0 py-3" name="city_id">
+                                        <option value="">Location</option>
+                                        <?php
+                                        // Fetch cities from the database
+                                        $result = $con->query("SELECT * FROM cities");
+                                        while ($row = mysqli_fetch_assoc($result)) {
+                                            $selected = isset($_GET['city_id']) && $_GET['city_id'] == $row['city_id'] ? 'selected' : '';
+                                            echo "<option value='{$row['city_id']}' {$selected}>{$row['city']}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-dark border-0 w-100 py-3">Search</button>
+                                </div>  
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-dark border-0 w-100 py-3">Search</button>
-                    </div>
+
+                        <!-- Search Button -->
+                          
+                    </form></Center>
+                    <!-- End Form -->
                 </div>
             </div>
         </div>
-        <!-- Search End -->
+        <!-- Search Section End -->
+
 
 
 
@@ -142,7 +180,7 @@
                         <p><i class="fa fa-check text-primary me-3"></i>Browse properties that match your vision and budget.</p>
                         <p><i class="fa fa-check text-primary me-3"></i>From start to finish, we`re here to guide you to your perfect property.</p>
                         <p><i class="fa fa-check text-primary me-3"></i>Start your journey to a new home with our trusted guidance.</p>
-                        <a class="btn btn-primary py-3 px-5 mt-3" href="about.html">Read More</a>
+                        <a class="btn btn-primary py-3 px-5 mt-3" href="about.php">Read More</a>
                     </div>
                 </div>
             </div>
@@ -168,7 +206,7 @@
                     </div>
                     <div class="col-lg-4 col-md-6">
                         <h5 class="text-white mb-4">Quick Links</h5>
-                        <a class="btn btn-link text-white-50" href="about.html">About Us</a>
+                        <a class="btn btn-link text-white-50" href="about.php">About Us</a>
                         <a class="btn btn-link text-white-50" href="contact.php">Contact Us</a>
                         <a class="btn btn-link text-white-50" href="properties-list.php">Properties List</a>
                         <a class="btn btn-link text-white-50" href="">Privacy Policy</a>

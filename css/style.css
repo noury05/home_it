@@ -14,8 +14,6 @@
     z-index: 99;
 }
 
-
-
 /*** Button ***/
 .btn {
     transition: .5s;
@@ -372,4 +370,18 @@
     margin-right: 0;
     padding-right: 0;
     border-right: none;
+}
+
+.wishlist-btn.active {
+    background-color: #dc3545; /* Red background */
+    color: white;
+    border-color: #dc3545;
+}
+
+.wishlist-btn i {
+    transition: color 0.3s;
+}
+
+.wishlist-btn.active i {
+    color: white;
 }

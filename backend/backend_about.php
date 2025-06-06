@@ -4,7 +4,8 @@
   if (!isset($_SESSION['user_id'])){
     header("location:../sign_up_sign_in/login.php?error=2");
   }
-    
+
+  include('../inc/connection.php');
   
 ?>
 
@@ -98,40 +99,55 @@
         <!-- Header End -->
 
 
-        <!-- Search Start -->
+                
+        <!-- Search Section Start -->
+        <?php
+
+        // Initialize variables
+        $keyword = isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '';
+        $type_id = isset($_GET['type_id']) ? $_GET['type_id'] : '';
+        $city_id = isset($_GET['city_id']) ? $_GET['city_id'] : '';
+        ?>
         <div class="container-fluid bg-primary mb-5" style="padding: 35px;">
             <div class="container">
-                <div class="row g-2">
-                    <div class="col-md-10">
-                        <div class="row g-2">
-                            <div class="col-md-4">
-                                <input type="text" class="form-control border-0 py-3" placeholder="Search Keyword">
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select border-0 py-3">
-                                    <option selected>Property Type</option>
-                                    <option value="1">Property Type 1</option>
-                                    <option value="2">Property Type 2</option>
-                                    <option value="3">Property Type 3</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <select class="form-select border-0 py-3">
-                                    <option selected>Location</option>
-                                    <option value="1">Location 1</option>
-                                    <option value="2">Location 2</option>
-                                    <option value="3">Location 3</option>
-                                </select>
-                            </div>
+                <form action="myProperties.php" method="get">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control border-0 py-3" name="keyword" placeholder="Search Keyword" value="<?= $keyword ?>">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select border-0 py-3" name="type_id">
+                                <option value="">Property Type</option>
+                                <?php
+                                $result = $con->query("SELECT * FROM property_types");
+                                while ($row = $result->fetch_assoc()) {
+                                    $selected = $row['type_id'] == $type_id ? 'selected' : '';
+                                    echo "<option value='{$row['type_id']}' {$selected}>{$row['type']}</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select border-0 py-3" name="city_id">
+                                <option value="">Location</option>
+                                <?php
+                                $result = $con->query("SELECT * FROM cities");
+                                while ($row = $result->fetch_assoc()) {
+                                    $selected = $row['city_id'] == $city_id ? 'selected' : '';
+                                    echo "<option value='{$row['city_id']}' {$selected}>{$row['city']}</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-dark border-0 w-100 py-3">Search</button>
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-dark border-0 w-100 py-3">Search</button>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
-        <!-- Search End -->
+        <!-- Search Section End -->
+
 
 
 
@@ -153,7 +169,7 @@
                         <p><i class="fa fa-check text-primary me-3"></i>Browse properties that match your vision and budget.</p>
                         <p><i class="fa fa-check text-primary me-3"></i>From start to finish, we`re here to guide you to your perfect property.</p>
                         <p><i class="fa fa-check text-primary me-3"></i>Start your journey to a new home with our trusted guidance.</p>
-                        <a class="btn btn-primary py-3 px-5 mt-3" href="about.html">Read More</a>
+                        <a class="btn btn-primary py-3 px-5 mt-3" href="backend_index.php">Read More</a>
                     </div>
                 </div>
             </div>
